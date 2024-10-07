@@ -62,6 +62,8 @@ The application uses a config.json file to store settings such as program attrib
 Example config.json
 json
 Копіювати код
+
+
 {
   "programs_file": "programs.json",
   "attributes": {
@@ -70,6 +72,11 @@ json
   },
   "color": "#FFFFFF"
 }
+
+
+
+
+
 Logging
 AppLauncher logs its activities in launcher.log, with log rotation enabled to manage log size. Logs include information such as program launches, errors, and status updates.
 
