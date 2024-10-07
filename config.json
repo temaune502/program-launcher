@@ -1,0 +1,9 @@
+{
+    "programs_file": "programs.json",
+    "color": "#8d9db4",
+    "attributes": {
+        "test": "file:E:/TePrograms/launcher/addons/test.py",
+        "speak": "command:nircmd speak text \"hello world\"",
+        "test12": "def:take_screenshot"
+    }
+}
