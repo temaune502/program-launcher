@@ -10,34 +10,7 @@ Program Attributes: Assign custom attributes (e.g., sys, autorun) to programs fo
 Log Files: Track program launches and errors with a rotating log system.
 Console Control: Show or hide the console window, and prevent accidental closure.
 Screenshot Functionality: Take and open screenshots with a single click.
-Installation
-Clone the Repository:
 
-bash
-Копіювати код
-git clone https://github.com/yourusername/applauncher.git
-cd applauncher
-Install Required Libraries:
-
-The project depends on several external libraries. Install them using pip:
-
-bash
-Копіювати код
-pip install -r requirements.txt
-The following key libraries are used:
-
-tkinter - For the graphical interface.
-psutil - To manage processes.
-pystray - For system tray functionality.
-Pillow - For handling images and screenshots.
-Run the Program:
-
-Once installed, you can start the application using:
-
-bash
-Копіювати код
-python 11.py
-Usage
 Adding a Program:
 
 Use the 'Add Program' option in the File menu to add a program to the launcher. You will be prompted to provide the program name, path, and optional attributes.
@@ -60,8 +33,6 @@ Configuration
 The application uses a config.json file to store settings such as program attributes and interface colors. You can manually edit this file to customize behavior.
 
 Example config.json
-json
-Копіювати код
 
 
 {
