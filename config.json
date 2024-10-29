@@ -1,9 +1,71 @@
 {
     "programs_file": "programs.json",
     "color": "#8d9db4",
+    "client_name": "launcher27",
+    "dev": "True",
+    "if_not_command": "True",
     "attributes": {
         "test": "file:E:/TePrograms/launcher/addons/test.py",
         "speak": "command:nircmd speak text \"hello world\"",
         "test12": "def:take_screenshot"
+    },
+    "hotkeys": {
+        "ctrl+r": "refresh_program_list",
+        "ctrl+1": "toggle_visibility_window",
+        "ctrl+tab+9": "exit_app_from_menu",
+        "ctrl+2": "toggle_console_visibility"
+    },
+    "commands": {
+        "cls": "clear_console",
+        "run": "run_external_program",
+        "info": "show_program_info",
+        "help": "help_list",
+		"list_run": "list_running_programs",
+        "add_program": "add_program",
+        "program_manager": "launch_program_manager",
+        "refresh": "load_programs_and_refresh",
+        "send": "send_message",
+        "hide": "toggle_console_visibility",
+        "hide_window": "hide_window",
+        "show_window": "show_window",
+        "toggle_window": "toggle_visibility_window",
+        "recconect": "recconect",
+        "disconnect": "disconnect_server",
+        "run_select": "start_program_console",
+        "programs_list": "program_list",
+		"name": "displays_client_name",
+		"load": "load_config",
+		"create_interface": "create_interface",
+		"exec": "execute_script",
+		"scrin":"take_screenshot"
+    },
+    "descriptions": {
+        "commands": {
+            "cls": "clear console sreen",
+            "run": "run external program",
+            "info": "show information with pid program",
+            "list_run": "print all runned program",
+            "add_program": "add new program",
+            "help": "display this text",
+            "program_manager": "run program manager",
+            "refresh": "refresh program list and reload file programs.json",
+            "hide": "hide console window",
+            "send": "send data to the server",
+            "hide_window": "hide launcher window",
+            "show_window": "show launcher window",
+            "toggle_window": "depending on the state of the window will hide or show",
+            "recconect": "recconect the server",
+            "disconnect": "break server connection",
+            "run_select": "run selected program",
+            "name": "print client name ",
+			"load": "load config file"
+
+        },
+        "hotkeys": {
+            "ctrl+r": "refresh program list",
+            "ctrl+1": "hide or show launcher window",
+            "ctrl+tab+9": "exit",
+            "ctrl+2": "show or hide console window"
+        }
     }
 }
