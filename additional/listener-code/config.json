@@ -1,0 +1,10 @@
+{
+    "target_name": "launcher",
+    "name": "hotKey_worker",
+    "hotkeys": {
+        "ctrl+r": "refresh",
+        "ctrl+1": "toggle_window",
+        "ctrl+tab+9": "exit",
+        "ctrl+2": "hide"
+    }
+}
