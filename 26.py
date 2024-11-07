@@ -19,7 +19,6 @@ from UniClient import Client
 import keyboard
 print("all import done")
 
-
 class AppLauncher:
     def __init__(self, root):
         self.root = root
@@ -40,14 +39,24 @@ class AppLauncher:
         self.processes = {}
         self.start_times = {}
         self.setup_logging()
-        self.create_interface()
+        #self.create_interface()
+        
+        
+        self.main_frame = tk.Frame(self.root, bg=self.color_code)
+        self.main_frame.pack(fill=tk.BOTH, expand=True)
+        self.mainFrame = 'MAIN'
+        self.create_interface(self.main_frame)
+        
+        
         self.root.protocol("WM_DELETE_WINDOW", self.hide_window)
         self.load_programs_and_refresh()
         self.load_running_programs()
         tray_thread = threading.Thread(target=self.run_in_tray, daemon=True)
         tray_thread.start()
         print("tray thread start")
-
+        self.keyboard_thread = None
+        self.flag_new_console = False
+        
 
         self.with_start_update_background(self.color_code)
         self.root.after(5000, self.check_autorestart)
@@ -84,10 +93,80 @@ class AppLauncher:
         for name in program_names:
             print(name)
     
+    def update_interface(self):
+        self.create_empty_frame(self.main_frame)
+        self.mainFrame = 'empty'
+    
+    def back_update_interface(self):
+        self.create_interface(self.main_frame)
+        self.mainFrame = 'MAIN'
+    
+        
+        
+        
+    def update_variable(self, *args):
+        if len(args) < 2:
+            print("Помилка: не вказано нове значення для змінної.")
+            return
+
+        var_name = args[0]  # Назва змінної
+        new_value = args[-1]  # Останній аргумент - нове значення
+
+        if hasattr(self, var_name):
+            attr = getattr(self, var_name)
+            # Якщо вказано індекс і атрибут є списком
+            if len(args) == 3 and isinstance(args[1], int) and isinstance(attr, list):
+                index = args[1]
+                try:
+                    attr[index] = new_value
+                    print(f"Значення '{var_name}[{index}]' змінено на {new_value}")
+                except IndexError:
+                    print(f"Помилка: індекс {index} виходить за межі списку '{var_name}'.")
+            # Якщо індекс не вказано
+            elif len(args) == 2:
+                setattr(self, var_name, new_value)
+                print(f"Значення '{var_name}' змінено на {new_value}")
+            else:
+                print("Помилка: неправильний формат аргументів.")
+        else:
+            print(f"Змінної '{var_name}' не знайдено.")
+    
+    
+    def get_variable(self, *args):
+        if len(args) < 1:
+            print("Помилка: не вказано назву змінної для виведення.")
+            return
+
+        var_name = args[0]  # Назва змінної
+
+        if hasattr(self, var_name):
+            attr = getattr(self, var_name)
+            # Якщо змінна є списком і вказано індекс
+            if len(args) == 2 and isinstance(args[1], int) and isinstance(attr, list):
+                index = args[1]
+                try:
+                    print(f"Значення '{var_name}[{index}]' = {attr[index]}")
+                except IndexError:
+                    print(f"Помилка: індекс {index} виходить за межі списку '{var_name}'.")
+            # Якщо індекс не вказано
+            elif len(args) == 1:
+                print(f"Значення '{var_name}' = {attr}")
+            else:
+                print("Помилка: неправильний формат аргументів.")
+        else:
+            print(f"Змінної '{var_name}' не знайдено.")
+            
+    def list_variables(self):
+        attributes = vars(self)  # Отримуємо всі атрибути об'єкта як словник
+        for name, value in attributes.items():
+            print(f"{name} = {value}")
+    
+    
     def load_scripts(self):
         scripts_dir = os.path.join(os.getcwd(), 'scripts')
         if scripts_dir not in sys.path:
             sys.path.append(scripts_dir)
+            
     
     
     def execute_script(self, *args):
@@ -118,14 +197,17 @@ class AppLauncher:
     
     
     def selected_program(self):
-        self.selectedraw = self.listbox.curselection()
-        #print(self.selectedraw)
-        if self.selectedraw:  # Перевірити, чи є обрані елементи
-            listbox_entry = self.listbox.get(self.selectedraw[0])  # Отримати елемент за першим індексом
-            #print(listbox_entry)
-            self.selected_program_name = listbox_entry.split(" (")[0]
-            #print(self.selected_program_name)
-            
+        if self.mainFrame == 'MAIN':
+            self.selectedraw = self.listbox.curselection()
+            #print(self.selectedraw)
+            if self.selectedraw:  # Перевірити, чи є обрані елементи
+                listbox_entry = self.listbox.get(self.selectedraw[0])  # Отримати елемент за першим індексом
+                #print(listbox_entry)
+                self.selected_program_name = listbox_entry.split(" (")[0]
+                #print(self.selected_program_name)
+        else:
+            print('')
+
     def start_program_console(self):
         self.launch_program(self.selected_program_name)
     
@@ -146,33 +228,61 @@ class AppLauncher:
     def disconnect_server(self):
         self.client.close()
     
+    def restart_keyListener_thread(self):
+        self.stop_keyboard_listener()
+        self.startKeyListen()
+    
     def start_keyboard_listener(self):
-        """Стартує окремий потік для прослуховування гарячих клавіш."""
-        keyboard_thread = threading.Thread(target=self.listen_for_hotkeys, daemon=True)
-        keyboard_thread.start()
+        # Якщо потік уже запущений, зупиняємо його перед запуском нового
+        if self.use_hotkey == True:
+            if self.keyboard_thread and self.keyboard_thread.is_alive():
+                self.stop_keyboard_listener()
+    
+            self.key_thread_running = True
+            self.keyboard_thread = threading.Thread(target=self.listen_for_hotkeys, daemon=True)
+            self.keyboard_thread.start()
+        
+    def startKeyListen(self):
+        self.key_thread_running =True
+        self.start_keyboard_listener()
+    
+    def stop_keyboard_listener(self):
+        # Зупиняємо потік
+        self.key_thread_running = False
+        if self.keyboard_thread:
+            self.keyboard_thread.join()  # Чекаємо, поки потік завершиться
+        # Видаляємо зареєстровані гарячі клавіші
+        for hotkey in self.registered_hotkeys:
+            keyboard.remove_hotkey(hotkey)
+        self.registered_hotkeys.clear()
 
     def listen_for_hotkeys(self):
-        """Цикл прослуховування гарячих клавіш з періодичною перевіркою."""
-        while True:
+        """Цикл прослуховування гарячих клавіш з регулярним оновленням."""
+        while self.key_thread_running:
+            # print(self.key_thread_running)
             try:
+                # Перереєструємо гарячі клавіші кожні 5 секунд
                 for hotkey, action in self.hotkeys.items():
-                    # Якщо гаряча клавіша вже зареєстрована, спочатку видаляємо її
+                    # Видаляємо гарячі клавіші, якщо вони вже зареєстровані
                     if hotkey in self.registered_hotkeys:
                         keyboard.remove_hotkey(hotkey)
-
-                    # Додаємо гарячу клавішу знову і зберігаємо в зареєстрованих
+    
+                    # Додаємо гарячу клавішу заново
                     keyboard.add_hotkey(hotkey, action)
                     self.registered_hotkeys.add(hotkey)
-
-                # Чекаємо кілька секунд перед повторною реєстрацією
-                time.sleep(10)
+    
+                # Затримка для повторної перереєстрації
+                time.sleep(5)
+    
             except Exception as e:
                 print(f"Помилка: {e}")
-                # Перезапуск прослуховування при помилці
-                self.start_keyboard_listener()
-                break
+                # Видаляємо всі зареєстровані гарячі клавіші та очищуємо список
+                for hotkey in list(self.registered_hotkeys):
+                    keyboard.remove_hotkey(hotkey)
+                self.registered_hotkeys.clear()
+                time.sleep(5)  # Затримка перед повторною спробою
 
-
+    
 
     def recconect(self):
         self.client.restart_connection()
@@ -181,7 +291,8 @@ class AppLauncher:
         """Перевіряє наявність нових повідомлень кожні 500 мс."""
         if self.client.received_messages:
             message = self.client.received_messages.pop(0)
-            print(message)
+            if self.print_receive_message:
+                print(message)
             self.process_client_message(message)
 
         # Викликаємо цю ж функцію знову через 500 мс
@@ -213,27 +324,87 @@ class AppLauncher:
             if "from" in message_data and "message" in message_data:
                 sender = message_data["from"]
                 content = message_data["message"]
-                print(f"Message received from {sender}: {content}")
+                if self.notify_with_client_msg:
+                    print(f"Message received from {sender}: {content}")
 
-                # Обробляємо команду, якщо це команда для ланчера
-                self.handle_launcher_command(sender, content)
+                # Перевіряємо, чи повідомлення містить "command=None"
+                if "command=None" in content:
+                    # Видаляємо "command=None" з тексту повідомлення
+                    content = content.replace("command=None,", "").strip()
+                    # Пропускаємо обробку команди для ланчера
+                    print(f"Filtered message from {sender}: {content}")
+                else:
+                    if self.execute_command_with_client == True:
+                        # Обробляємо команду, якщо це команда для ланчера
+                        self.handle_launcher_command(sender, content)
+                    else:
+                        return
 
-        except json.JSONDecodeError as e:
-            print(f"Parsing error JSON: {e}")
-        except Exception as e:
-            print(f"Message processing error: {e}")
+        except json.JSONDecodeError:
+            print("Failed to parse JSON message")
 
     def handle_launcher_command(self, sender, command):
-        """Обробляє команди, надіслані від інших клієнтів."""
-        if command in self.commands:
-            print(f"Execution of the command from {sender}: {command}")
-            self.commands[command]()
+        if self.use_black_list:
+            if sender in self.banned:
+                print(f'{sender} in black list')
+            else:
+                # Розбиваємо command на перше слово (команду) і решту слів (аргументи)
+                args = command.split()
+                cmd_name = args[0]
+                cmd_args = args[1:]
+
+                if cmd_name in self.commands:
+                    if self.notify_with_client_msg:
+                        print(f"Execution of the command from {sender}: {cmd_name}")
+                    # Викликаємо команду з аргументами
+                    self.commands[cmd_name](*cmd_args)
+                else:
+                    print(f"Unknown command: {cmd_name}")
+
+        elif self.use_white_list:
+            if sender in self.white_list:
+                # Розбиваємо command на команду і аргументи
+                args = command.split()
+                cmd_name = args[0]
+                cmd_args = args[1:]
+
+                if cmd_name in self.commands:
+                    if self.notify_with_client_msg:
+                        print(f"Execution of the command from {sender}: {cmd_name}")
+                    self.commands[cmd_name](*cmd_args)
+                else:
+                    print(f"Unknown command: {cmd_name}")
+            else:
+                return
         else:
-            print(f"Unknown command: {command}")
+            # Розбиваємо command на команду і аргументи
+            args = command.split()
+            cmd_name = args[0]
+            cmd_args = args[1:]
+
+            if cmd_name in self.commands:
+                if self.notify_with_client_msg:
+                    print(f"Execution of the command from {sender}: {cmd_name}")
+                self.commands[cmd_name](*cmd_args)
+            else:
+                print(f"Unknown command: {cmd_name}")
+                
+                
+    def exec_command(self, *args):
+    # Решта аргументів об'єднуємо в один рядок для виконання як коду
+        code_to_execute = " ".join(args[0:])
         
+        try:
+            # Виконуємо переданий код
+            exec(code_to_execute)
+            print(code_to_execute)
+            print(code_to_execute)
+        except Exception as e:
+            print(f"Error executing code: {e}")
+
 
     def console(self):
-        while True:
+        while self.console_work:
             command = input(">").strip()  # Отримуємо команду
             if command:
                 args = command.split()  # Розділяємо команду і аргументи
@@ -304,19 +475,22 @@ class AppLauncher:
 
     
     def freeze_program(self):
-        selected = self.listbox.curselection()
-        if selected:
-            listbox_entry = self.listbox.get(selected)
-            program_name = listbox_entry.split(" (")[0]
-            if program_name in self.processes and self.processes[program_name]:
-                for pid in self.processes[program_name]:
-                    try:
-                        process = psutil.Process(pid)
-                        process.suspend()  # Заморозка процесу
-                        self.update_status(program_name, "Frezed")
-                        self.logger.info(f"Program '{program_name}' frozen (PID: {pid})")
-                    except psutil.NoSuchProcess:
-                        self.logger.error(f"Failed to freeze the program '{program_name}' (PID: {pid}) - process not found.")
+        if self.mainFrame == 'MAIN':
+            selected = self.listbox.curselection()
+            if selected:
+                listbox_entry = self.listbox.get(selected)
+                program_name = listbox_entry.split(" (")[0]
+                if program_name in self.processes and self.processes[program_name]:
+                    for pid in self.processes[program_name]:
+                        try:
+                            process = psutil.Process(pid)
+                            process.suspend()  # Заморозка процесу
+                            self.update_status(program_name, "Frezed")
+                            self.logger.info(f"Program '{program_name}' frozen (PID: {pid})")
+                        except psutil.NoSuchProcess:
+                            self.logger.error(f"Failed to freeze the program '{program_name}' (PID: {pid}) - process not found.")
+            else:
+                print('')
     
     def load_running_programs(self):
         if os.path.exists('running_programs.json'):
@@ -363,19 +537,16 @@ class AppLauncher:
         return
     
     def hide_console(self):
-        """Приховати вікно консолі"""
         console_window = self.kernel32.GetConsoleWindow()
         if console_window != 0:
             self.user32.ShowWindow(console_window, 0)  # 0 - приховати\
             
     def show_console(self):
-        """Відобразити вікно консолі"""
         console_window = self.kernel32.GetConsoleWindow()
         if console_window != 0:
             self.user32.ShowWindow(console_window, 5)  # 5 - показати
     
     def toggle_console_visibility(self):
-        """Перемкнути видимість вікна консолі"""
         if self.console_window != 0:
             # Отримуємо поточний стан консолі
             is_visible = self.user32.IsWindowVisible(self.console_window)
@@ -407,14 +578,18 @@ class AppLauncher:
                 self.dev_mode = config.get('dev', 'False').lower() == 'true'
                 self.client_name = config.get('client_name', 'launcher')
                 self.if_not_command = config.get('if_not_command', 'True').lower() == 'true'
-
-                # Завантажуємо гарячі клавіші
+                self.use_hotkey = config.get('use_hotkey', 'True').lower() == 'true'
+                self.console_work = config.get('console_work', 'True').lower() == 'true'
+                self.notify_with_client_msg = config.get('notify_with_client_msg', 'True').lower() == 'true'
+                self.print_receive_message = config.get('print_receive_message', 'True').lower() == 'true'
+                self.use_black_list = config.get('use_black_list', 'False').lower() == 'true'
+                self.use_white_list = config.get('use_white_list', 'False').lower() == 'true'
+                self.execute_command_with_client = config.get('execute_command_with_client', 'True').lower() == 'true'
+                self.banned = config.get('banned', '')
+                self.white_list = config.get('white_list', '')
+                
                 self.hotkeys = {key: getattr(self, func, None) for key, func in config.get('hotkeys', {}).items()}
-                
-                # Завантажуємо команди
                 self.commands = {cmd: getattr(self, func, None) for cmd, func in config.get('commands', {}).items()}
-                
-                # Завантажуємо описи команд і гарячих клавіш
                 self.descriptions = config.get('descriptions', {})
 
 
@@ -439,6 +614,7 @@ class AppLauncher:
                     "launch_count": 0,
                     "total_runtime": 0.0,
                     "description": "",
+                    "self_console": "False",
                     "attributes": [attr.strip() for attr in attributes.split(',')] if attributes else []
                 }
                 self.save_programs()
@@ -462,10 +638,13 @@ class AppLauncher:
     
     def launch_program(self, program_name=None):
         if not program_name:
-            selected = self.listbox.curselection()
-            if selected:
-                listbox_entry = self.listbox.get(selected)
-                program_name = listbox_entry.split(" (")[0]
+            if self.mainFrame == 'MAIN':
+                selected = self.listbox.curselection()
+                if selected:
+                    listbox_entry = self.listbox.get(selected)
+                    program_name = listbox_entry.split(" (")[0]
+            else:
+                print('')
 
         if program_name:
             program_info = self.programs.get(program_name)
@@ -474,10 +653,19 @@ class AppLauncher:
 
             self.apply_attributes(program_info)
             
+            try:
+                self.flag_new_console = (program_info["self_console"]).lower() == 'true'
+            except Exception as e:
+                self.flag_new_console = False
+            
             command = program_info["command"]
             program_dir = os.path.dirname(program_info["path"])
+            
             try:
-                process = subprocess.Popen(command, cwd=program_dir, shell=True)
+                if self.flag_new_console:
+                    process = subprocess.Popen(command, cwd=program_dir, creationflags=subprocess.CREATE_NEW_CONSOLE)
+                else:
+                    process = subprocess.Popen(command, cwd=program_dir, shell=True)
                 pid = process.pid
                 if program_name not in self.processes:
                     self.processes[program_name] = []
@@ -506,46 +694,52 @@ class AppLauncher:
 
     
     def update_program_list_with_search(self, event):
-        search_term = self.search_var.get().lower()
-        filtered_programs = {}
+        if self.mainFrame == 'MAIN':
+            search_term = self.search_var.get().lower()
+            filtered_programs = {}
 
-        # Фільтрувати програми на основі режиму відображення (приховані/неприховані)
-        for name, info in self.programs.items():
-            if search_term in name.lower():
-                if self.hidden_mode and "hide" not in info.get("attributes", []):
-                    continue  # Ігноруємо неприховані програми в режимі прихованих
-                elif not self.hidden_mode and "hide" in info.get("attributes", []):
-                    continue  # Ігноруємо приховані програми в режимі звичайних
-                filtered_programs[name] = info
+            # Фільтрувати програми на основі режиму відображення (приховані/неприховані)
+            for name, info in self.programs.items():
+                if search_term in name.lower():
+                    if self.hidden_mode and "hide" not in info.get("attributes", []):
+                        continue  # Ігноруємо неприховані програми в режимі прихованих
+                    elif not self.hidden_mode and "hide" in info.get("attributes", []):
+                        continue  # Ігноруємо приховані програми в режимі звичайних
+                    filtered_programs[name] = info
 
-        self.refresh_program_list(filtered_programs)
+            self.refresh_program_list(filtered_programs)
+        else:
+            print('')
     
     def close_program(self):
-        selected = self.listbox.curselection()
-        if selected:
-            listbox_entry = self.listbox.get(selected)
-            program_name = listbox_entry.split(" (")[0]
-            if program_name in self.processes and self.processes[program_name]:
-                for pid in self.processes[program_name]:
-                    self.terminate_process_tree(pid)
-                    start_time = self.start_times.pop(pid, None)
-                    if start_time:
-                        elapsed_time = time.time() - start_time
-                        self.programs[program_name]["total_runtime"] += elapsed_time
-                        self.logger.info(f"Program '{program_name}' (PID: {pid}) completed through {elapsed_time:.2f} second")
-                self.processes[program_name] = []
-                self.update_status(program_name, "Зупинено")
-                self.save_programs()
-                self.save_running_programs()
+        if self.mainFrame == 'MAIN':
+            selected = self.listbox.curselection()
+            if selected:
+                listbox_entry = self.listbox.get(selected)
+                program_name = listbox_entry.split(" (")[0]
+                if program_name in self.processes and self.processes[program_name]:
+                    for pid in self.processes[program_name]:
+                        self.terminate_process_tree(pid)
+                        start_time = self.start_times.pop(pid, None)
+                        if start_time:
+                            elapsed_time = time.time() - start_time
+                            self.programs[program_name]["total_runtime"] += elapsed_time
+                            self.logger.info(f"Program '{program_name}' (PID: {pid}) completed through {elapsed_time:.2f} second")
+                    self.processes[program_name] = []
+                    self.update_status(program_name, "Зупинено")
+                    self.save_programs()
+                    self.save_running_programs()
 
-            # Перевірка на наявність атрибута 'refresh'
-                if "refresh" in self.programs[program_name].get("attributes", []):
-                    self.logger.info(f"Reload 'programs.json' after completing the program '{program_name}'")
-                    self.load_programs_and_refresh()
+                # Перевірка на наявність атрибута 'refresh'
+                    if "refresh" in self.programs[program_name].get("attributes", []):
+                        self.logger.info(f"Reload 'programs.json' after completing the program '{program_name}'")
+                        self.load_programs_and_refresh()
 
-            else:
-                self.update_status(program_name, "Не запущено")
-                self.logger.info(f"Attempting to end the program '{program_name}', which was not launched")
+                else:
+                    self.update_status(program_name, "Не запущено")
+                    self.logger.info(f"Attempting to end the program '{program_name}', which was not launched")
+        else:
+            print('')
 
 
     def terminate_process_tree(self, pid):
@@ -572,11 +766,14 @@ class AppLauncher:
         self.refresh_program_list()
 
     def load_programs_and_refresh(self):
-        self.load_programs()
-        for program_name, program_info in self.programs.items():
-            if "autorun" in program_info.get("attributes", []):
-                self.launch_program(program_name)
-        self.check_programs_status()
+        if self.mainFrame == 'MAIN':
+            self.load_programs()
+            for program_name, program_info in self.programs.items():
+                if "autorun" in program_info.get("attributes", []):
+                    self.launch_program(program_name)
+            self.check_programs_status()
+        else:
+            print("функція працює тільки в головному фреймі")
 
     def refresh_program_list(self, programs=None):
         self.listbox.delete(0, tk.END)
@@ -595,6 +792,7 @@ class AppLauncher:
             self.listbox.insert(tk.END, f"{program_name} ({status})")
             if self.listbox.size() > 0:
                 self.listbox.itemconfig(tk.END, fg=color)
+
     
     def open_file_location(self):
         selected = self.listbox.curselection()
@@ -711,78 +909,99 @@ class AppLauncher:
         self.root.after(2000, self.check_programs_status)  # Перевірка кожні 2 секунди
 
 
-    def create_interface(self):
-        self.root.title("Program Launcher")
+    def create_interface(self, frame):
+        # Очищення фрейму перед заповненням
+        for widget in frame.winfo_children():
+            widget.destroy()
+
+        # Конфігурація вікна
+        self.root.title("Launcher")
         self.root.geometry("600x400")
-        self.root.configure(bg="#043355")
-        
-        root.iconbitmap('icon.ico')
-        # Створюємо верхнє меню
-        
-        
+        self.root.configure(bg=self.color_code)
+        self.create_search_bar(frame)
+        # Іконка для вікна
+        self.root.iconbitmap('icon.ico')
+
+        # Верхнє меню
         menubar = Menu(self.root)
 
-        # Створюємо вкладку "Файл"
+        # Вкладка "Файл"
         file_menu = Menu(menubar, tearoff=0)
-        file_menu.add_command(label="Додати програму", command=self.add_program)  # Додаємо програму
+        file_menu.add_command(label="Додати програму", command=self.add_program)
         file_menu.add_command(label="Очистити файл кеш", command=self.clear_running_programs)
-        file_menu.add_command(label="Відкрити папку скрипта", command=self.open_script_folder)  # Відкрити папку скрипта 
+        file_menu.add_command(label="Відкрити папку скрипта", command=self.open_script_folder)
         file_menu.add_command(label="Менеджер програм", command=self.launch_program_manager)
         menubar.add_cascade(label="Файл", menu=file_menu)
 
-        # Створюємо вкладку "Інтерфейс"
-        interface = Menu(menubar, tearoff=0)
-        interface.add_command(label="Змінити колір інтерфейсу", command=self.choose_color)
-        interface.add_command(label="Зберегти значення кольору", command=self.save_color_to_config)
-        interface.add_command(label="Показати приховані програми", command=self.toggle_hidden_programs)
-        menubar.add_cascade(label="Інтерфейс", menu=interface)
-        # Створюємо вкладку "Додаткове"
+        # Вкладка "Інтерфейс"
+        interface_menu = Menu(menubar, tearoff=0)
+        interface_menu.add_command(label="Змінити колір інтерфейсу", command=self.choose_color)
+        interface_menu.add_command(label="Зберегти значення кольору", command=self.save_color_to_config)
+        interface_menu.add_command(label="Показати приховані програми", command=self.toggle_hidden_programs)
+        menubar.add_cascade(label="Інтерфейс", menu=interface_menu)
+
+        # Вкладка "Додаткове"
         extra_menu = Menu(menubar, tearoff=0)
-        extra_menu.add_command(label="Перезавантажити список програм", command=self.load_programs_and_refresh) # Перезавантажити список програм
+        extra_menu.add_command(label="Перезавантажити список програм", command=self.load_programs_and_refresh)
         extra_menu.add_command(label="Показати/приховати консоль", command=self.toggle_console_visibility)
         extra_menu.add_command(label="Показати/приховати вікно ланчера", command=self.toggle_visibility_window)
-        extra_menu.add_command(label="Вийти", command=self.exit_app_from_menu)  # Кнопка для виходу з програми
+        extra_menu.add_command(label="Вийти", command=self.exit_app_from_menu)
         menubar.add_cascade(label="Додаткове", menu=extra_menu)
-        # Прикріплюємо меню до вікна
+        
+        # Додаємо меню до вікна
         self.root.config(menu=menubar)
 
         # Пошуковий рядок
-        self.create_search_bar()
+        
 
-        frame = tk.Frame(self.root, bg="#FFFFFF")
-        frame.pack(fill=tk.BOTH, expand=True)
-
-        self.listbox = tk.Listbox(frame, bg="#FFFFFF", fg="black")
+        # Список програм
+        self.listbox = tk.Listbox(frame, bg=self.color_code, fg="black")
         self.listbox.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
         self.listbox.bind("<Double-1>", self.on_listbox_double_click)
         self.listbox.bind("<Button-3>", self.show_context_menu)
         self.listbox.bind("<ButtonRelease-1>", self.show_program_details)
 
+        # Скролбар
         scrollbar = tk.Scrollbar(frame, command=self.listbox.yview)
         scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
         self.listbox.config(yscrollcommand=scrollbar.set)
 
-        self.details_label = tk.Label(frame, bg="#FFFFFF", fg="black", justify=tk.LEFT, anchor="nw", wraplength=300)
+        # Панель деталей
+        self.details_label = tk.Label(frame, bg=self.color_code, fg="black", justify=tk.LEFT, anchor="nw", wraplength=300)
         self.details_label.pack(side=tk.RIGHT, fill=tk.BOTH, expand=False)
 
-    # Контекстне меню
+        # Контекстне меню
         self.context_menu = tk.Menu(self.root, tearoff=0)
-     
         self.context_menu.add_command(label="Запустити", command=self.launch_program)
         self.context_menu.add_command(label="Зупинити", command=self.close_program)
         self.context_menu.add_command(label="Заморозити програму", command=self.freeze_program)
         self.context_menu.add_command(label="Редагувати", command=self.edit_program)
         self.context_menu.add_command(label="Видалити", command=self.delete_program)
-        self.context_menu.add_command(label="Відкрити розташування файлу", command=self.open_file_location) 
-        
+        self.context_menu.add_command(label="Відкрити розташування файлу", command=self.open_file_location)
+
+        # Оновлення списку програм
         self.refresh_program_list()
         self.check_programs_status()
-    def create_search_bar(self):
+        
+        
+    def create_search_bar(self, frame):
         self.search_var = tk.StringVar()
-        self.search_bar = tk.Entry(self.root, textvariable=self.search_var, bg=self.color_code, fg="black")
-        self.search_bar.pack(fill=tk.X)
+        self.search_bar = tk.Entry(frame, textvariable=self.search_var, bg=self.color_code, fg="black")
+        self.search_bar.pack(fill=tk.X, pady=5)  # Додаємо параметр `pady` для відступу зверху
         self.search_bar.bind('<KeyRelease>', self.update_program_list_with_search)
+        
+        
+    # Створюємо функцію для створення порожнього фрейму
+    def create_empty_frame(self, frame):
+        for widget in frame.winfo_children():
+            widget.destroy()
 
+        label = tk.Label(frame, text="Порожній інтерфейс", font=("Arial", 16), bg=self.color_code)
+        label.pack(pady=20)
+        back_button = tk.Button(frame, text="Повернутися до головного інтерфейсу", command=lambda: self.back_update_interface())
+        back_button.pack(pady=10)
+
+    
     def choose_color(self):
         # Відкриття діалогу для вибору кольору
         color_code = colorchooser.askcolor(title="Виберіть колір")
@@ -816,31 +1035,37 @@ class AppLauncher:
             print(f"Виникла помилка: {e}")
 
     def update_background(self, color):
-        
         # Оновлення кольору фону головного вікна
-        self.root.config(bg=color)
-    
-    # Оновлення кольору фону пошукового рядка
+        if self.mainFrame == 'MAIN':
+            self.root.config(bg=color)
+            self.listbox.config(bg=color)
+            self.details_label.config(bg=color)
+            self.search_bar.config(bg=color)
+            self.context_menu.config(bg=color)
+            # Видалення верхнього меню, якщо воно існує
+            self.root.config(menu=None)
+            print("Color change and menubar removal successful")
+            print(color)
+        else:
+            print('')
 
-        self.listbox.config(bg=color)
-        self.details_label.config(bg=color)
-        self.search_bar.config(bg=color)
-        # Оновлення кольору фону і контекстного меню
-        self.context_menu.config(bg=color)
-        print("color change ")
-        print(color)
-        # Можна додати аналогічні оновлення для інших елементів інтерфейсу
       
       
     def with_start_update_background(self, color):
-
         # Оновлення кольору фону головного вікна
-        self.root.config(bg=color)
-
-        self.listbox.config(bg=color)
-        self.details_label.config(bg=color)
-        # Оновлення кольору фону і контекстного меню
-        self.context_menu.config(bg=color)
+        if self.mainFrame == 'MAIN':
+            self.root.config(bg=color)
+            self.listbox.config(bg=color)
+            self.details_label.config(bg=color)
+            self.search_bar.config(bg=color)
+            self.context_menu.config(bg=color)
+            # Видалення верхнього меню, якщо воно існує
+            self.root.config(menu=None)
+            print("Color change and menubar removal successful")
+            print(color)
+        else:
+            print('')
+        
 
     def open_script_folder(self):
     # Отримуємо шлях до папки, з якої запущено скрипт
@@ -855,6 +1080,7 @@ class AppLauncher:
 
     def exit_app_from_menu(self):
         # Вихід з програми через меню
+        self.client.close()
         self.root.quit()
 
     def create_image(self):
@@ -890,22 +1116,23 @@ class AppLauncher:
 
 
     def exit_app(self, icon, item):
+        self.client.close()
         icon.stop()
         self.root.quit()
 
     def show_context_menu(self, event):
-        try:
-            self.listbox.select_set(self.listbox.nearest(event.y))
-            self.context_menu.post(event.x_root, event.y_root)
-        except Exception as e:
-            self.logger.error(f"Не вдалося відкрити контекстне меню: {e}")
+            try:
+                self.listbox.select_set(self.listbox.nearest(event.y))
+                self.context_menu.post(event.x_root, event.y_root)
+            except Exception as e:
+                self.logger.error(f"Не вдалося відкрити контекстне меню: {e}")
 
     def on_listbox_double_click(self, event):
-        selected = self.listbox.curselection()
-        if selected:
-            listbox_entry = self.listbox.get(selected)
-            program_name = listbox_entry.split(" (")[0]
-            self.launch_program(program_name)
+            selected = self.listbox.curselection()
+            if selected:
+                listbox_entry = self.listbox.get(selected)
+                program_name = listbox_entry.split(" (")[0]
+                self.launch_program(program_name)
             
             
     def take_screenshot(self):
