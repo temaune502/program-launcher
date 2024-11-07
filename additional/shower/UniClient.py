@@ -28,6 +28,14 @@ class Client:
         except Exception as e:
             print(f"Unexpected error: {e}")
 
+    def restart_connection(self):
+        """Функція для примусового перезапуску з'єднання"""
+        print("Restarting connection...")
+        if self.is_connected:
+            self.close()  # Закриваємо поточне з'єднання
+        self.start()  # Відновлюємо нове з'єднання
+    
+    
     def reconnect(self):
         if not self.is_connected:
             try:
