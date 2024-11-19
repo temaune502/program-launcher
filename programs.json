@@ -1,0 +1,12 @@
+{
+    "test": {
+        "path": "C:/test/test.exe",
+        "command": "C:/test/test.exe",
+        "close_command": "",
+        "launch_count": 0,
+        "total_runtime": 0.0,
+        "description": "",
+        "self_console": "False",
+        "attributes": []
+    }
+}
