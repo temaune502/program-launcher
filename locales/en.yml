@@ -1,0 +1,127 @@
+config_load: "config load"
+tray_thread_start: "tray thread start"
+client_start: "Client start"
+start_receive_messages: "start receive messages"
+keyboard_listener_statr: "keyboard listener start"
+console_thread_start: "console thread start"
+
+
+programs_consol_func: "Programs:"
+
+update_variable_error_1: "Error: No new value specified for variable."
+
+change_value: "value '{var_name}' change {new_value}"
+
+index_out_of_range: "Error: index {index} is out of range for the list '{var_name}'."
+update_variable_error_2: "Error: incorrect argument format."
+variable_not_found: "Variable '{var_name}' not found."
+get_variable_error_1: "Error: variable name not specified for display."
+get_variable_value: "The value of '{var_name}' is {value}"
+index_out_of_range: "Error: index {index} is out of range for the list '{var_name}'."
+get_variable_error_2": "Error: incorrect argument format."
+variable_not_found": "Variable '{var_name}' not found."
+
+"file_not_specified": "Error: No executable file specified."
+"script_not_found": "The script '{script_name}' was not found in the 'scripts' folder."
+"execution_error": "Error executing the script '{script_name}': {error}"
+
+"message_send": "Message sent to client {target_name}: {message}"
+"send_message_error": "Error sending message: {error}"
+"send_message_error_command": "Error with command. Use: send <client name> <message>"
+"message_received": "Message received from {sender}: {content}"
+"filtered_message": "Filtered message from {sender}: {content}"
+"json_parse_error": "Failed to parse JSON message."
+
+"black_list_message": "{sender} is in black list"
+"command_execution": "Execution of the command from {sender}: {cmd_name}"
+"unknown_command": "Unknown command: {cmd_name}"
+
+
+"execution_error": "An error occurred while executing the command: {error}"
+"unknown_command2": "Unknown command: {cmd}"
+
+"path_not_specified": "The path to the program is not specified."
+"program_not_started": "Not started program."
+"program_info": "Information about the program: {pids}, {program_details}"
+"program_not_found": "Program '{program_name}' not found."
+
+"program_name_missing": "The name of the program is not specified."
+"program_name_title": "Program Name"
+"program_name_prompt": "Enter the name of the program:"
+"select_program_title": "Select a Program"
+
+"attributes_title": "Attributes"
+"attributes_prompt": "Enter attributes separated by commas (sys, autorun, test):"
+
+"runn": "Run"
+"stoped": "Stoped"
+"not_run": "Not run"
+"frezz": "Frezed"
+
+"no_info_found": "No program information found."
+"select_program": "Select an app to view details."
+
+"program_name": "Name"
+"program_path": "Path"
+"launch_count": "Launch Count"
+"total_runtime": "Total Runtime"
+"hours": "hours"
+"minutes": "minutes"
+"program_description": "Description"
+
+"edit_program": "Edit program"
+"new_program_name": "Enter a new program name:"
+
+"new_program_path": "Choose a new program path"
+"confirmation_title": "Deletion Confirmation"
+
+
+"confirmation_message": "Are you sure you want to delete the program '{program_name}'?"
+
+"file": "File"
+"add_program": "Add Program"
+"clear_cache_file": "Clear Cache File"
+"open_script_folder": "Open sript folder"
+"program_manager": "Program Manager"
+
+"interface": "Interface"
+"change_interface_color": "Change Interface Color"
+"save_color_to_config": "Save Color Value"
+"show_hidden_programs": "Show Hidden Programs"
+
+"extra": "Extra"
+"reload_programs_list": "Reload Program List"
+"toggle_console_visibility": "Toggle Console Visibility"
+"toggle_launcher_window_visibility": "Toggle Launcher Window Visibility"
+"exit": "Exit"
+
+"launch": "Launch"
+"stop": "Stop"
+"freeze_program": "Freeze Program"
+"edit": "Edit"
+"delete": "Delete"
+"open_file_location": "Open File Location"
+
+"chose_color": "Chose new color"
+
+"color_saved_success": "Color {color} successfully saved to {config_file}."
+"file_not_found": "File {config_file} not found."
+"json_decode_error": "Error in the structure of the settings file."
+"generic_error": "An error occurred: {error}"
+"color_change_secces": "Color change and menubar removal successful"
+
+"tray_window_button": "Laucnher"
+"tray_console_button": "Console"
+"tray_exit_button": "Exit"
+
+
+"func_only_work_in_mainfraim": "Function works only in the main frame"
+
+lang_not_specified: "Lang not specified"
+app_title_tray: "TeLaunch"
+window_title: "TeLaunch"
+hide_details_panel: "Hide details panel"
+program_list_not_load_or_empty: "Program list not load or empty"
+missing_executable_file: "Missing program"
+missing_executable_file2: "There are no executable files for these programs:\n{missing_list}"
+all_executable_file_found: "All executables found."
