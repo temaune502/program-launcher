@@ -1,0 +1,120 @@
+config_load: "Завантаження конфігурації"
+tray_thread_start: "Запуск потоку трей"
+client_start: "Запуск клієнта"
+start_receive_messages: "Початок отримання повідомлень"
+keyboard_listener_statr: "Запуск слухача клавіатури"
+console_thread_start: "Запуск потоку консолі"
+
+programs_consol_func: "Програми:"
+
+update_variable_error_1: "Помилка: не вказано нове значення для змінної."
+
+change_value: "значення '{var_name}' змінено на {new_value}"
+
+index_out_of_range: "Помилка: індекс {index} знаходиться поза межами списку '{var_name}'."
+update_variable_error_2: "Помилка: неправильний формат аргументу."
+variable_not_found: "Змінну '{var_name}' не знайдено."
+get_variable_error_1: "Помилка: не вказано ім'я змінної для відображення."
+get_variable_value: "Значення '{var_name}' є {value}"
+get_variable_error_2: "Помилка: неправильний формат аргументу."
+file_not_specified: "Помилка: не вказано виконуваний файл."
+script_not_found: "Скрипт '{script_name}' не знайдено в папці 'scripts'."
+execution_error: "Помилка виконання скрипта '{script_name}': {error}"
+
+message_send: "Повідомлення надіслано клієнту {target_name}: {message}"
+send_message_error: "Помилка при відправці повідомлення: {error}"
+send_message_error_command: "Помилка з командою. Використовуйте: send <ім'я клієнта> <повідомлення>"
+message_received: "Повідомлення отримано від {sender}: {content}"
+filtered_message: "Фільтроване повідомлення від {sender}: {content}"
+json_parse_error: "Не вдалося розібрати повідомлення JSON."
+
+black_list_message: "{sender} знаходиться в чорному списку"
+command_execution: "Виконання команди від {sender}: {cmd_name}"
+unknown_command: "Невідома команда: {cmd_name}"
+
+execution_error: "Сталася помилка при виконанні команди: {error}"
+unknown_command2: "Невідома команда: {cmd}"
+
+path_not_specified: "Шлях до програми не вказано."
+program_not_started: "Програма не запущена."
+program_info: "Інформація про програму: {pids}, {program_details}"
+program_not_found: "Програму '{program_name}' не знайдено."
+
+program_name_missing: "Не вказано ім'я програми."
+program_name_title: "Ім'я програми"
+program_name_prompt: "Введіть ім'я програми:"
+select_program_title: "Вибір програми"
+
+attributes_title: "Атрибути"
+attributes_prompt: "Введіть атрибути, розділені комами (sys, autorun, test):"
+
+runn: "Запуск"
+stoped: "Зупинено"
+not_run: "Не запущено"
+frezz: "Заморожено"
+
+no_info_found: "Інформація про програму не знайдена."
+select_program: "Виберіть програму для перегляду інформації."
+
+program_name: "Ім'я"
+program_path: "Шлях"
+launch_count: "Кількість запусків"
+total_runtime: "Загальний час роботи"
+hours: "години"
+minutes: "хвилини"
+program_description: "Опис"
+
+edit_program: "Редагувати програму"
+new_program_name: "Введіть нове ім'я програми:"
+
+new_program_path: "Виберіть новий шлях програми"
+confirmation_title: "Підтвердження видалення"
+
+confirmation_message: "Ви впевнені, що хочете видалити програму '{program_name}'?"
+
+file: "Файл"
+add_program: "Додати програму"
+clear_cache_file: "Очистити кеш-файл"
+open_script_folder: "Відкрити папку скрипта"
+program_manager: "Менеджер програм"
+
+interface: "Інтерфейс"
+change_interface_color: "Змінити колір інтерфейсу"
+save_color_to_config: "Зберегти значення кольору"
+show_hidden_programs: "Показати приховані програми"
+
+extra: "Додатково"
+reload_programs_list: "Перезавантажити список програм"
+toggle_console_visibility: "Показати/приховати консолі"
+toggle_launcher_window_visibility: "Показати/приховати лаунчер"
+exit: "Вихід"
+
+launch: "Запустити"
+stop: "Зупинити"
+freeze_program: "Заморозити програму"
+edit: "Редагувати"
+delete: "Видалити"
+open_file_location: "Відкрити розташування файлу"
+
+chose_color: "Виберіть новий колір"
+
+color_saved_success: "Колір {color} успішно збережено в {config_file}."
+file_not_found: "Файл {config_file} не знайдено."
+json_decode_error: "Помилка в структурі файлу налаштувань."
+generic_error: "Сталася помилка: {error}"
+color_change_secces: "Зміна кольору та видалення панелі меню успішні"
+
+tray_window_button: "Лаунчер"
+tray_console_button: "Консоль"
+tray_exit_button: "Вихід"
+
+func_only_work_in_mainfraim: "Функція працює лише в основному фреймі"
+
+lang_not_specified: "Мова не вказана"
+app_title_tray: "TeLaunch"
+window_title: "TeLaunch"
+hide_details_panel: "Приховати панель деталей"
+program_list_not_load_or_empty: "Список програм порожній або не завантажений."
+missing_executable_file: "Відсутні програми"
+missing_executable_file2: "Відсутні виконувані файли для таких програм:\n{missing_list}"
+all_executable_file_found: "Усі виконувані файли знайдено."
