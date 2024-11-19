@@ -1,0 +1,7 @@
+logging
+psutil
+pystray
+pillow
+datetime
+keyboard
+PyYAML
