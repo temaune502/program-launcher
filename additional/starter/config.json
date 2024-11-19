@@ -1,0 +1,17 @@
+[
+    {
+        "path": "E:/TePrograms/launcher/additional/server-bin/server8.exe",
+        "working_directory": "E:/TePrograms/launcher/additional/server-bin",
+        "arguments": ""
+    },
+    {
+        "path": "E:/TePrograms/launcher/30/30.exe",
+        "working_directory": "E:/TePrograms/launcher/30",
+        "arguments": ""
+    },
+    {
+        "path": "E:/TePrograms/launcher/additional/sleepMon-bin/sleepMon.exe",
+        "working_directory": "E:/TePrograms/launcher/additional/sleepMon-bin",
+        "arguments": ""
+    }
+]
