@@ -1,6 +1,10 @@
 Launcher Application
 This is a Python-based launcher application that allows centralized management of various programs on your system. With a focus on automation and flexibility, it provides options to run, monitor, suspend, and control applications from a user-friendly interface.
 
+ATTENTION ATTENTION ATTENTION
+If you want to add the launcher to autoboot, it is recommended to run the launcher package via starter.py in the starter.py configuration file, you need to change the paths to the server program, the launcher itself, and the hotkey handler.
+Also, you need to change the path for sleepMon.py in the settings.json file, which periodically restarts the listener program that is designed to work with hotkeys
+
 Features
 Launch and Manage Programs: Start and stop programs, track their running status, and manage specific attributes such as autorun and self-console mode.
 Hidden Mode: Toggle between showing and hiding specific programs for a more organized interface.
