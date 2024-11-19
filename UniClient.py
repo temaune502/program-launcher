@@ -10,6 +10,10 @@ class Client:
         self.client_socket.settimeout(5)  # Таймаут для підключення
         self.received_messages = []  # Змінна для збереження отриманих повідомлень
         self.is_connected = False
+        self.server_notify = False
+        
+    def set_client_notify(self, server_notify):
+        self.server_notify = server_notify
 
     def start(self):
         try:
@@ -18,15 +22,18 @@ class Client:
                 self.client_socket.connect((self.server_host, self.server_port))
                 self.client_socket.sendall(self.name.encode('utf-8'))
                 self.is_connected = True
-                print("Connected to server")
+                if self.server_notify:
+                    print("Connected to server")
                 
                 # Запускаємо потік для отримання повідомлень
                 threading.Thread(target=self.receive_messages, daemon=True).start()
         except (socket.timeout, ConnectionRefusedError) as e:
-            print(f"Connecting error: {e}. Retrying...")
+            if self.server_notify:
+                print(f"Connecting error: {e}. Retrying...")
             self.reconnect()
         except Exception as e:
-            print(f"Unexpected error: {e}")
+            if self.server_notify:
+                print(f"Unexpected error: {e}")
 
     def reconnect(self):
         if not self.is_connected:
@@ -35,14 +42,17 @@ class Client:
                 self.client_socket.close()
                 self.client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                 self.client_socket.settimeout(5)
-                print("Attempting to reconnect...")
+                if self.server_notify:
+                    print("Attempting to reconnect...")
                 self.start()  # Викликаємо спробу знову підключитися
             except Exception as e:
-                print(f"Reconnect error: {e}")
+                if self.server_notify:
+                    print(f"Reconnect error: {e}")
 
     def restart_connection(self):
         """Функція для примусового перезапуску з'єднання"""
-        print("Restarting connection...")
+        if self.server_notify:
+            print("Restarting connection...")
         if self.is_connected:
             self.close()  # Закриваємо поточне з'єднання
         self.start()  # Відновлюємо нове з'єднання
@@ -54,7 +64,8 @@ class Client:
                 if data:
                     self.received_messages.append(data)  # Зберігаємо отримане повідомлення у список
                 else:
-                    print("Server disconnected")
+                    if self.server_notify:
+                        print("Server disconnected")
                     self.is_connected = False
                     self.reconnect()
                     break
@@ -62,7 +73,8 @@ class Client:
                 # Таймаут може виникнути без втрати підключення, тому не відразу скидаємо з'єднання
                 continue
             except Exception as e:
-                print(f"Error receiving message: {e}")
+                if self.server_notify:
+                    print(f"Error receiving message: {e}")
                 self.is_connected = False
                 self.reconnect()
                 break
@@ -73,14 +85,17 @@ class Client:
                 formatted_message = f"{target_name}: {message}"
                 self.client_socket.sendall(formatted_message.encode('utf-8'))
             else:
-                print("Cannot send message, not connected to server.")
+                if self.server_notify:
+                    print("Cannot send message, not connected to server.")
         except Exception as e:
-            print(f"Error sending message: {e}")
+            if self.server_notify:
+                print(f"Error sending message: {e}")
 
     def close(self):
         #self.is_connected = False
         self.client_socket.close()
-        print("Connection closed.")
+        if self.server_notify:
+            print("Connection closed.")
 
 # Приклад використання
 # client = Client(name="Client1")
