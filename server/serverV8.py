@@ -103,18 +103,26 @@ def handle_client(client_socket, addr, name):
         console_clients.append(client_socket)
         print(f"Console client {name} connected")
 
-    while True:
-        try:
-            data = client_socket.recv(1024).decode('utf-8').strip()
-            if data.lower() == "exit":
-                print(f"Client {name} disconnected")
-                break
+    try:
+        while True:
+            try:
+                # Отримуємо дані від клієнта та перевіряємо їх
+                data = client_socket.recv(1024).decode('utf-8').strip()
+                if not data:
+                    print(f"Client {name} disconnected (empty message)")
+                    break
 
-            if ":" in data:
+                # Якщо дані не містять двокрапки, відправимо повідомлення про помилку формату
+                if ":" not in data:
+                    send_message(client_socket, "server", "invalid_format")
+                    continue
+                
+                # Розділяємо повідомлення на отримувача та текст повідомлення
                 target_name, message = data.split(":", 1)
                 target_name = target_name.strip()
                 message = message.strip()
 
+                # Логіка обробки за типом отримувача
                 if target_name == "server":
                     execute_server_command(name, message)
                 elif target_name == "from_all":
@@ -124,17 +132,24 @@ def handle_client(client_socket, addr, name):
                 else:
                     send_message(client_socket, "server", "client_not_found")
 
-            notify_consoles(name, data)
+                # Відправка повідомлення консолям для сповіщення
+                notify_consoles(name, data)
 
-        except ConnectionResetError:
-            print(f"Client {name} unexpectedly disconnected")
-            break
+            except (ConnectionResetError, OSError) as e:
+                print(f"Client {name} unexpectedly disconnected: {e}")
+                break
 
-    client_socket.close()
-    del clients[name]
-    if client_socket in console_clients:
-        console_clients.remove(client_socket)
+    finally:
+        # Очищення після завершення обробки клієнта
+        client_socket.close()
+        clients.pop(name, None)
+        if client_socket in console_clients:
+            console_clients.remove(client_socket)
+        print(f"Client {name} fully removed from server")
 
+
+
+        
 def execute_server_command(sender_name, command):
     global clients
     command = command.strip().lower()
@@ -203,3 +218,4 @@ if __name__ == "__main__":
     console_input.daemon = True
     start_server.daemon = True
     setup_tray()  # Запуск трея
+
