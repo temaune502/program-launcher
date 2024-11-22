@@ -2,15 +2,28 @@
     "programs_file": "programs.json",
     "app_geometry": "600x400",
     "color": "#677687",
-    "lang": "en",
-    "client_name": "launcher",
-    "notify_with_client_msg": "False",
-    "print_receive_message": "False",
-	"dev": "False",
-	"if_not_command": "True",
-	"TeServerIntegration": "True",
-	"notify_missing_program": "True",
+    "lang": "ua",
+    "categories": [
+        "NoneAtr",
+        "Pirate",
+        "Games",
+        "Waste",
+        "Debug",
+        "3D",
+		"sys"
+    ],
 	
+	"filter_attribute":"NoneAtr",
+    "client_name": "launcher27",
+    "notify_with_client_msg": "True",
+    "print_receive_message": "True",
+	
+    "dev": "True",
+	
+    "if_not_command": "False",
+    "TeServerIntegration": "True",
+	
+    "notify_missing_program": "True",
     "additional_menu": "True",
     "interface_meny_": "True",
     "file_menu_": "True",
@@ -19,7 +32,6 @@
     "use_scrollbar": "True",
     "use_details_label": "True",
     "add_hide_details_panel_btn": "False",
-	
     "lower_console_command": "True",
     "use_black_list": "False",
     "use_white_list": "False",
@@ -27,7 +39,6 @@
     "execute_command_with_client": "True",
     "banned": "",
     "white_list": "",
-	
     "use_hotkey": "False",
     "console_work": "True",
     "attributes": {
