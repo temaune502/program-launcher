@@ -125,3 +125,6 @@ program_list_not_load_or_empty: "Program list not load or empty"
 missing_executable_file: "Missing program"
 missing_executable_file2: "There are no executable files for these programs:\n{missing_list}"
 all_executable_file_found: "All executables found."
+search_not_found: "No matching programs found"
+
+category: "Categories"
