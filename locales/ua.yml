@@ -118,3 +118,6 @@ program_list_not_load_or_empty: "Список програм порожній а
 missing_executable_file: "Відсутні програми"
 missing_executable_file2: "Відсутні виконувані файли для таких програм:\n{missing_list}"
 all_executable_file_found: "Усі виконувані файли знайдено."
+search_not_found: "Збігів не знайдено"
+
+category: "Катагорії"
