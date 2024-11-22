@@ -32,6 +32,8 @@ class AppLauncher:
         self.hidden_mode = False
         self.client_name = "launcher"
         self.attributes = {}
+        self.categories = [""]
+        self.filter_attribute = "NoneAtr"
         self.load_config()
         self.hide_console_with_start()
         self.loc = Localization(locale=self.lang)
@@ -42,13 +44,14 @@ class AppLauncher:
         self.processes = {}
         self.start_times = {}
         self.setup_logging()
-        self.filter_attribute = "@@@@@@@"
         
         #self.create_interface()
         self.main_frame = tk.Frame(self.root, bg=self.color_code)
         self.main_frame.pack(fill=tk.BOTH, expand=True)
         self.mainFrame = 'MAIN'
         self.create_interface(self.main_frame)
+        
+        self.populate_category_menu()
         
         self.root.protocol("WM_DELETE_WINDOW", self.hide_window)
         self.load_programs_and_refresh()
@@ -96,24 +99,33 @@ class AppLauncher:
         self.selectedraw = None
         self.selected_program_name = None
     
-    def test_func400(self):
-        self.filter_attribute = "eweqewewqewewewewewewewewew"
-    
+    def populate_category_menu(self):
+        """Динамічне заповнення меню категорій"""
+        for category in self.categories:
+            self.category_menu.add_command(
+                label=category,
+                command=lambda cat=category: self.update_category(cat)
+            )
+
+    def update_category(self, category):
+        """Оновлення поточної категорії та оновлення списку програм"""
+        self.filter_attribute = category
+        self.refresh_program_list()
+        
     def program_list(self):
         program_names = list(self.programs.keys())
         print(self.loc._("programs_consol_func"))
         for name in program_names:
             print(name)
-    
+
     def update_interface(self):
         self.create_empty_frame(self.main_frame)
         self.mainFrame = 'empty'
-    
+
     def back_update_interface(self):
         self.create_interface(self.main_frame)
         self.mainFrame = 'MAIN'
-        
-        
+
     def check_executables(self):
         if not self.programs:
             print(self.loc._("program_list_not_load_or_empty"))
@@ -574,23 +586,21 @@ class AppLauncher:
         self.root.after(5000, self.check_autorestart)
 
     def toggle_hidden_programs(self):
-        # Зберігаємо попереднє значення filter_attribute
-        if not hasattr(self, '_prev_filter_attribute'):
-            self._prev_filter_attribute = self.filter_attribute
-
+        """Перемикає режим прихованих програм"""
         # Перемикаємо режим прихованих програм
         self.hidden_mode = not self.hidden_mode
 
         if self.hidden_mode:
-            # Якщо активовано режим прихованих програм, фільтруємо за 'hide'
+            # Зберігаємо поточний filter_attribute і переключаємося на 'hide'
+            self._prev_filter_attribute = self.filter_attribute
             self.filter_attribute = 'hide'
         else:
-            # Повертаємо попереднє значення filter_attribute
+            # Відновлюємо попереднє значення filter_attribute
             self.filter_attribute = self._prev_filter_attribute
+            self._prev_filter_attribute = None  # Очищаємо, щоб уникнути плутанини
 
         # Оновлюємо список програм
-        self.refresh_program_list(None)
-
+        self.refresh_program_list()
     
     def hide_console_with_start(self):
         if self.dev_mode == False:
@@ -653,6 +663,8 @@ class AppLauncher:
                 self.TeServerIntegration = config.get('TeServerIntegration', 'False').lower() == 'true'
                 self.notify_missing_program = config.get('notify_missing_program', 'False').lower() == 'true'
                 self.banned = config.get('banned', '')
+                self.filter_attribute = config.get('filter_attribute', '')
+                self.categories = config.get('categories', '[]')
                 self.white_list = config.get('white_list', '')
                 self.lang = config.get('lang', 'en')
                 
@@ -849,7 +861,7 @@ class AppLauncher:
             children = parent.children(recursive=True)
             for child in children:
                 child.terminate()
-            psutil.wait_procs(children, timeout=5)
+            psutil.wait_procs(children, timeout=10)
             parent.terminate()
             parent.wait(5)
         except psutil.NoSuchProcess:
@@ -1067,6 +1079,10 @@ class AppLauncher:
             interface_menu.add_command(label=self.loc._("show_hidden_programs"), command=self.toggle_hidden_programs)
             menubar.add_cascade(label=self.loc._("interface"), menu=interface_menu)
             
+            
+        self.category_menu = Menu(menubar, tearoff=0)
+        menubar.add_cascade(label=self.loc._("category"), menu=self.category_menu)
+            
         # Вкладка "Додаткове"
         if self.additional_menu:
             extra_menu = Menu(menubar, tearoff=0, bg="#f7f7f7", fg="black", font=("Arial", 9))
@@ -1099,7 +1115,7 @@ class AppLauncher:
         if self.use_details_label:
             self.details_label = tk.Label(frame, bg="#f0f0f0", fg="black", font=("Arial", 10), justify=tk.LEFT, anchor="nw", wraplength=300, padx=10, pady=10)
             self.details_label.pack(side=tk.RIGHT, fill=tk.BOTH, expand=False, padx=5, pady=5)
-
+        
         # Контекстне меню
         if self.use_context_menu:
             self.context_menu = tk.Menu(self.root, tearoff=0, bg="#ffffff", fg="black", font=("Arial", 9))
